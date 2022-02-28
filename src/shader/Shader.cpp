@@ -11,12 +11,11 @@ Shader::Shader(int shaderType, const char *shaderPath)
     _id = glCreateShader(shaderType);
 
 	// Read the Vertex Shader code from the file
-	std::string VertexShaderCode;
 	std::ifstream VertexShaderStream(shaderPath, std::ios::in);
 	if (VertexShaderStream.is_open()) {
 		std::stringstream sstr;
 		sstr << VertexShaderStream.rdbuf();
-		VertexShaderCode = sstr.str();
+        std::string VertexShaderCode = sstr.str();
 		VertexShaderStream.close();
 
         std::cout << "Compiling shader: " << shaderPath << std::endl;
@@ -43,4 +42,5 @@ Shader::Shader(int shaderType, const char *shaderPath)
 
 Shader::~Shader()
 {
+    glDeleteShader(_id);
 }

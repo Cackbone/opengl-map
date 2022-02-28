@@ -1,6 +1,9 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
+#include "shader/ShaderLinker.hpp"
+#include "shader/Shader.hpp"
+
 BEGIN_VISUALIZER_NAMESPACE
 
 class Camera;

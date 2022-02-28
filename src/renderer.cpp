@@ -172,109 +172,18 @@ bool Renderer::Initialize()
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 
-    GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
+    Shader vShader(GL_VERTEX_SHADER, "../../src/shader/VertexShader.vs");
+    Shader fShader(GL_FRAGMENT_SHADER, "../../src/shader/FragmentShader.fs");
 
-    m_ShaderProgram = glCreateProgram();
+    ShaderLinker shaderLinker({
+            vShader,
+            fShader
+        });
 
-    glAttachShader(m_ShaderProgram, vShader);
-    glAttachShader(m_ShaderProgram, fShader);
+    m_ShaderProgram = shaderLinker.id();
 
-    {
-        char const* const vertexShader =
-            R"(#version 450 core
-
-layout(location = 0) in vec3 inWorldPos;
-layout(location = 1) in vec3 inColor;
-
-layout(location = 0) smooth out vec3 color;
-
-layout(std140, binding = 0) uniform Matrix
-{
-    mat4 modelViewProjection;
-};
-
-void main()
-{
-    color = inColor;
-    gl_Position = modelViewProjection*vec4(inWorldPos, 1.);
-}
-)";
-
-        glShaderSource(vShader, 1, &vertexShader, nullptr);
-
-        glCompileShader(vShader);
-
-        {
-            GLint length = 0;
-
-            glGetShaderiv(vShader, GL_INFO_LOG_LENGTH, &length);
-
-            if (length > 1)
-            {
-                std::string log(length, '\0');
-
-                glGetShaderInfoLog(vShader, length, nullptr, log.data());
-
-                std::cerr << "Vertex shader log:\n" << log << '\n';
-            }
-        }
-
-        char const* const fragmentShader =
-            R"(#version 450 core
-
-layout(location = 0) out vec4 outColor;
-
-layout(location = 0) smooth in vec3 color;
-
-void main()
-{
-    outColor = vec4(color, 1.0);
-}
-)";
-
-        glShaderSource(fShader, 1, &fragmentShader, nullptr);
-
-        glCompileShader(fShader);
-
-        {
-            GLint length = 0;
-
-            glGetShaderiv(fShader, GL_INFO_LOG_LENGTH, &length);
-
-            if (length > 1)
-            {
-                std::string log(length, '\0');
-
-                glGetShaderInfoLog(fShader, length, nullptr, log.data());
-
-                std::cerr << "Vertex shader log:\n" << log << '\n';
-            }
-        }
-    }
-
-    glLinkProgram(m_ShaderProgram);
-
-    {
-        GLint length = 0;
-
-        glGetProgramiv(m_ShaderProgram, GL_INFO_LOG_LENGTH, &length);
-
-        if (length > 1)
-        {
-            std::string log(length, '\0');
-
-            glGetProgramInfoLog(m_ShaderProgram, length, nullptr, log.data());
-
-            std::cerr << "Shader program log:\n" << log << '\n';
-        }
-    }
-
-    glDetachShader(m_ShaderProgram, vShader);
-    glDetachShader(m_ShaderProgram, fShader);
-
-    glDeleteShader(vShader);
-    glDeleteShader(fShader);
+    glDetachShader(m_ShaderProgram, vShader.id());
+    glDetachShader(m_ShaderProgram, fShader.id());
 
     return true;
 }
@@ -305,9 +214,6 @@ void Renderer::Cleanup()
 
 void Renderer::UpdateViewport(uint32_t width, uint32_t height)
 {
-    (void)width;
-    (void)height;
-
     glViewport(0, 0, width, height);
     UpdateCamera();
 }

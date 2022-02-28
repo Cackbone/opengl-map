@@ -40,4 +40,5 @@ ShaderLinker::ShaderLinker(std::vector<Shader> shaders)
 
 ShaderLinker::~ShaderLinker()
 {
+    glDeleteShader(_id);
 }
