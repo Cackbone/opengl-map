@@ -2,11 +2,8 @@
 
 #include <window.hpp>
 
-int32_t main(int32_t argc, char** argv)
+int32_t main(int32_t, char**)
 {
-    (void)argc;
-    (void)argv;
-
     auto &window = visualizer::Window::GetInstance();
 
     if (!window.InitWindow("3D Programming Course", 1280, 720))

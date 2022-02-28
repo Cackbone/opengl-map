@@ -4,7 +4,7 @@
  *  Description:
  */
 
-#include "Shader.hpp"
+#include "shader/Shader.hpp"
 
 Shader::Shader(int shaderType, const char *shaderPath)
 {
