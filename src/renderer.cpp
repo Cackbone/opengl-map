@@ -9,6 +9,9 @@
 #include <camera.hpp>
 #include <renderer.hpp>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.hpp>
+
 BEGIN_VISUALIZER_NAMESPACE
 
 struct VertexDataPosition3fColor3f
@@ -64,7 +67,7 @@ void GenerateSphereMesh(std::vector<VertexDataPosition3fColor3f>& vertices, std:
 
             const glm::vec3 normal = glm::vec3(nx, ny, nz);
 
-            const glm::vec3 color = glm::vec3(0.5f) + 0.5f * glm::normalize(direction);
+            const glm::vec3 color = glm::vec3(0.5f);// +0.5f * glm::normalize(direction);
 
             vertices[vertexId++] = { position, color };
 
@@ -126,32 +129,73 @@ void GenerateSphereMesh(std::vector<VertexDataPosition3fColor3f>& vertices, std:
     }
 }
 
+void loadMapMesh(std::vector<VertexDataPosition3fColor3f>& vertices, std::vector<size_t>& indices)
+{
+    tinyobj::attrib_t attribs;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string errors;
+
+    tinyobj::LoadObj(&attribs, &shapes, &materials, &errors, "C:\\Users\\jlemoine\\Desktop\\3D\\visualizer_project\\res\\desert.obj");
+
+    const size_t nb_vertices = attribs.vertices.size() / 3;
+    float min[3] = { -255.875f, -44.3907776f, -255.875f };
+    float max[3] = { 255.875f, -12.0602303f, 255.875f };
+
+    vertices.resize(nb_vertices);
+    for (int i = 0; i < nb_vertices; i++) {
+        float x = attribs.vertices[3 * i];
+        float y = attribs.vertices[3 * i + 1];
+        float z = attribs.vertices[3 * i + 2];
+        float nx = 2 * ((x - min[0]) / (max[0] - min[0])) - 1;
+        float ny = 2 * ((y - min[1]) / (max[1] - min[1])) - 1;
+        float nz = 2 * ((z - min[2]) / (max[2] - min[2])) - 1;
+        float color = (y - min[1]) / (max[1] - min[1]);
+
+        vertices[i] = {
+                glm::vec3(nx, ny, nz),
+                glm::vec3(color)
+        };
+    }
+
+    indices.resize(shapes[0].mesh.indices.size());
+    for (int i = 0; i < shapes[0].mesh.indices.size(); i++) {
+        indices[i] = size_t(shapes[0].mesh.indices[i].vertex_index);
+    }
+
+    std::cout << indices[indices.size() - 1] << std::endl;
+}
+
 bool Renderer::Initialize()
 {
     // Initialize your buffers etc. here
 
-    const uint16_t sphereStackCount = 63;
-    const uint16_t sphereSectorCount = 63;
+    
+    //const uint16_t sphereStackCount = 63;
+    //const uint16_t sphereSectorCount = 63;
 
-    const uint16_t vertexCount = (sphereStackCount + 1) * (sphereSectorCount + 1);
-    const uint16_t indexCount = (sphereStackCount - 1) * sphereSectorCount * 6;
+    //const uint16_t vertexCount = (sphereStackCount + 1) * (sphereSectorCount + 1);
+    //const uint16_t indexCount = (sphereStackCount - 1) * sphereSectorCount * 6;
 
-    m_IndexCount = indexCount;
+    //m_IndexCount = indexCount;
 
-    std::vector<VertexDataPosition3fColor3f> vertices(vertexCount);
-    std::vector<uint16_t> indices(indexCount);
+    std::vector<VertexDataPosition3fColor3f> vertices;
+    std::vector<size_t> indices;
 
-    GenerateSphereMesh(vertices, indices, sphereStackCount, sphereSectorCount, glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
+    loadMapMesh(vertices, indices);
+    //GenerateSphereMesh(vertices, indices, sphereStackCount, sphereSectorCount, glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
+
+    m_IndexCount = indices.size();
 
     glCreateBuffers(1, &m_UBO);
     glNamedBufferStorage(m_UBO, sizeof(glm::mat4), glm::value_ptr(m_Camera->GetViewProjectionMatrix()), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
     m_UBOData = reinterpret_cast<glm::mat4*>(glMapNamedBufferRange(m_UBO, 0, sizeof(glm::mat4), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_FLUSH_EXPLICIT_BIT));
 
     glCreateBuffers(1, &m_VBO);
-    glNamedBufferStorage(m_VBO, sizeof(VertexDataPosition3fColor3f) * vertexCount, vertices.data(), 0);
+    glNamedBufferStorage(m_VBO, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data(), 0);
 
     glCreateBuffers(1, &m_IBO);
-    glNamedBufferStorage(m_IBO, sizeof(uint16_t) * indexCount, indices.data(), 0);
+    glNamedBufferStorage(m_IBO, sizeof(size_t) * indices.size(), indices.data(), 0);
 
     glCreateVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
@@ -286,7 +330,7 @@ void Renderer::Render()
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBO, 0, sizeof(glm::mat4));
     glUseProgram(m_ShaderProgram);
     glBindVertexArray(m_VAO);
-    glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_SHORT, nullptr);
+    glDrawElements(GL_TRIANGLES, GLsizei(m_IndexCount), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
     glUseProgram(0);
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, 0, 0, 0);
