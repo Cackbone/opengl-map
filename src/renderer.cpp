@@ -139,7 +139,10 @@ bool Renderer::Initialize()
     m_IndexCount = indexCount;
 
     std::vector<VertexDataPosition3fColor3f> vertices(vertexCount);
+    std::vector<glm::vec3> desertVertices;
     std::vector<uint16_t> indices(indexCount);
+
+    //objParser.parse("../../res/desert.obj", desertVertices);
 
     GenerateSphereMesh(vertices, indices, sphereStackCount, sphereSectorCount, glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
 
