@@ -4,7 +4,6 @@
 #include "shader/ShaderLinker.hpp"
 #include "shader/Shader.hpp"
 //#pragma warning(push, 2)
-#include "OBJ_Loader.hpp"
 //#pragma warning(pop)
 
 BEGIN_VISUALIZER_NAMESPACE
@@ -34,7 +33,7 @@ public:
     void UpdateCamera();
 
 private:
-    uint16_t m_IndexCount;
+    uint32_t m_IndexCount;
     GLuint m_VAO, m_VBO, m_IBO, m_UBO, m_ShaderProgram;
 
     glm::mat4* m_UBOData = nullptr;
