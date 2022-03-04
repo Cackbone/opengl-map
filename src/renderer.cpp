@@ -129,41 +129,36 @@ void GenerateSphereMesh(std::vector<VertexDataPosition3fColor3f>& vertices, std:
     }
 }
 
-void loadMapMesh(std::vector<VertexDataPosition3fColor3f>& vertices, std::vector<size_t>& indices)
+void loadMapMesh(std::vector<VertexDataPosition3fColor3f>& vertices, std::vector<long>& indices)
 {
     tinyobj::attrib_t attribs;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string errors;
 
-    tinyobj::LoadObj(&attribs, &shapes, &materials, &errors, "C:\\Users\\jlemoine\\Desktop\\3D\\visualizer_project\\res\\desert.obj");
+    tinyobj::LoadObj(&attribs, &shapes, &materials, &errors, "../../res/palm.obj");
 
     const size_t nb_vertices = attribs.vertices.size() / 3;
     float min[3] = { -255.875f, -44.3907776f, -255.875f };
     float max[3] = { 255.875f, -12.0602303f, 255.875f };
 
     vertices.resize(nb_vertices);
-    for (int i = 0; i < nb_vertices; i++) {
+    for (unsigned long i = 0; i < nb_vertices; i++) {
         float x = attribs.vertices[3 * i];
         float y = attribs.vertices[3 * i + 1];
         float z = attribs.vertices[3 * i + 2];
-        float nx = 2 * ((x - min[0]) / (max[0] - min[0])) - 1;
-        float ny = 2 * ((y - min[1]) / (max[1] - min[1])) - 1;
-        float nz = 2 * ((z - min[2]) / (max[2] - min[2])) - 1;
         float color = (y - min[1]) / (max[1] - min[1]);
 
         vertices[i] = {
-                glm::vec3(nx, ny, nz),
-                glm::vec3(color)
+            glm::vec3(x, y, z),
+            glm::vec3(color)
         };
     }
 
     indices.resize(shapes[0].mesh.indices.size());
-    for (int i = 0; i < shapes[0].mesh.indices.size(); i++) {
-        indices[i] = size_t(shapes[0].mesh.indices[i].vertex_index);
+    for (unsigned long i = 0; i < shapes[0].mesh.indices.size(); i++) {
+        indices[i] = static_cast<long>(shapes[0].mesh.indices[i].vertex_index);
     }
-
-    std::cout << indices[indices.size() - 1] << std::endl;
 }
 
 bool Renderer::Initialize()
@@ -180,12 +175,12 @@ bool Renderer::Initialize()
     //m_IndexCount = indexCount;
 
     std::vector<VertexDataPosition3fColor3f> vertices;
-    std::vector<size_t> indices;
+    std::vector<long> indices;
 
     loadMapMesh(vertices, indices);
     //GenerateSphereMesh(vertices, indices, sphereStackCount, sphereSectorCount, glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
 
-    m_IndexCount = indices.size();
+    m_IndexCount = static_cast<int>(indices.size());
 
     glCreateBuffers(1, &m_UBO);
     glNamedBufferStorage(m_UBO, sizeof(glm::mat4), glm::value_ptr(m_Camera->GetViewProjectionMatrix()), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
@@ -195,7 +190,7 @@ bool Renderer::Initialize()
     glNamedBufferStorage(m_VBO, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data(), 0);
 
     glCreateBuffers(1, &m_IBO);
-    glNamedBufferStorage(m_IBO, sizeof(size_t) * indices.size(), indices.data(), 0);
+    glNamedBufferStorage(m_IBO, sizeof(long) * indices.size(), indices.data(), 0);
 
     glCreateVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
@@ -330,7 +325,7 @@ void Renderer::Render()
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBO, 0, sizeof(glm::mat4));
     glUseProgram(m_ShaderProgram);
     glBindVertexArray(m_VAO);
-    glDrawElements(GL_TRIANGLES, GLsizei(m_IndexCount), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
     glUseProgram(0);
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, 0, 0, 0);

@@ -28,7 +28,7 @@ public:
     void UpdateCamera();
 
 private:
-    size_t m_IndexCount;
+    int m_IndexCount;
     GLuint m_VAO, m_VBO, m_IBO, m_UBO, m_ShaderProgram;
 
     glm::mat4* m_UBOData = nullptr;
