@@ -3,8 +3,6 @@
 
 #include "shader/ShaderLinker.hpp"
 #include "shader/Shader.hpp"
-//#pragma warning(push, 2)
-//#pragma warning(pop)
 
 BEGIN_VISUALIZER_NAMESPACE
 
