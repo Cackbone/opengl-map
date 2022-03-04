@@ -132,17 +132,7 @@ bool Renderer::Initialize()
 {
     // Initialize your buffers etc. here
 
-    const uint16_t sphereStackCount = 63;
-    const uint16_t sphereSectorCount = 63;
-
-    const uint16_t vertexCount = (sphereStackCount + 1) * (sphereSectorCount + 1);
-    const uint16_t indexCount = (sphereStackCount - 1) * sphereSectorCount * 6;
-
-    //std::vector<VertexDataPosition3fColor3f> vertices(vertexCount);
     std::vector<glm::vec3> desertVertices;
-    //std::vector<uint16_t> indices(indexCount);
-
-    //objParser.parse("", desertVertices);
 
     objl::Loader Loader;
     // Load .obj File
@@ -152,19 +142,15 @@ bool Renderer::Initialize()
     objl::Mesh curMesh = Loader.LoadedMeshes[0];
     std::cout << "load " << Loader.LoadedMeshes.size() << " meshes with " << curMesh.Vertices.size() << " vertices" << std::endl;
     std::vector<VertexDataPosition3fColor3f> vertices(curMesh.Vertices.size());
-    for (unsigned int j = 0; j < curMesh.Vertices.size(); j++) {
+    for (unsigned long j = 0; j < curMesh.Vertices.size(); j++) {
         vertices[j] = { glm::vec3(curMesh.Vertices[j].Position.X, curMesh.Vertices[j].Position.Y, curMesh.Vertices[j].Position.Z), glm::vec3(0.5) };
-        //std::cout << j << " | (" << vertices[j].position.x << "," << vertices[j].position.y << "," << vertices[j].position.z << ")" << std::endl;
     }
     std::cout << "reserves indexes with size of " << curMesh.Indices.size() << std::endl;
     std::vector<uint16_t> indices(curMesh.Indices.size());
-    for (unsigned int j = 0; j < curMesh.Indices.size(); j++) {
+    for (unsigned long j = 0; j < curMesh.Indices.size(); j++) {
         indices[j] = static_cast<uint16_t>(curMesh.Indices[j]);
     }
-    auto s = indices.size();
-    (void)s;
-    m_IndexCount = static_cast<uint32_t>(indices.size());
-    //m_IndexCount = static_cast<size_t>(indexCount);
+    m_IndexCount = static_cast<int>(indices.size());
 
 
     //GenerateSphereMesh(vertices, indices, sphereStackCount, sphereSectorCount, glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
@@ -174,10 +160,10 @@ bool Renderer::Initialize()
     m_UBOData = reinterpret_cast<glm::mat4*>(glMapNamedBufferRange(m_UBO, 0, sizeof(glm::mat4), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_FLUSH_EXPLICIT_BIT));
 
     glCreateBuffers(1, &m_VBO);
-    glNamedBufferStorage(m_VBO, sizeof(VertexDataPosition3fColor3f) * vertexCount, vertices.data(), 0);
+    glNamedBufferStorage(m_VBO, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data(), 0);
 
     glCreateBuffers(1, &m_IBO);
-    glNamedBufferStorage(m_IBO, sizeof(uint16_t) * indexCount, indices.data(), 0);
+    glNamedBufferStorage(m_IBO, sizeof(uint16_t) * indices.size(), indices.data(), 0);
 
     glCreateVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
