@@ -29,6 +29,11 @@ void loadMapMesh(std::vector<VertexDataPosition3fColor3f>& vertices, std::vector
 
     tinyobj::LoadObj(&attribs, &shapes, &materials, &errors, "../../res/desert.obj");
 
+    if (errors.size() < 0) {
+        std::cerr << "Error while loading obj file: " << errors << std::endl;
+        return;
+    }
+
     const size_t nb_vertices = attribs.vertices.size() / 3;
     float min[3] = { -255.875f, -44.3907776f, -255.875f };
     float max[3] = { 255.875f, -12.0602303f, 255.875f };
