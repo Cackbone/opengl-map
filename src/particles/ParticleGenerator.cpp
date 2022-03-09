@@ -22,6 +22,18 @@ void ParticleGenerator::update(float dt) {
     }
 }
 
+void ParticleGenerator::init() {
+    glCreateVertexArrays(1, &m_quadVAO);
+    glBindVertexArray(m_quadVAO);
+
+    glCreateBuffers(1, &m_quadVBO);
+    //glNamedBufferStorage(m_quadVBO, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data(), 0);
+}
+
+void ParticleGenerator::render() {
+
+}
+
 void ParticleGenerator::emit(glm::vec3 pos) {
     Particle& particle = m_particlePool[m_poolIndex];
 
