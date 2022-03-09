@@ -1,8 +1,9 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
-#include "shader/ShaderLinker.hpp"
-#include "shader/Shader.hpp"
+
+#include <desert.hpp>
+#include <palms.hpp>
 
 BEGIN_VISUALIZER_NAMESPACE
 
@@ -32,9 +33,12 @@ public:
 
 private:
     int m_IndexCount;
-    GLuint m_VAO, m_VBO, m_IBO, m_UBO, m_ShaderProgram;
+    GLuint m_UBO;
 
     glm::mat4* m_UBOData = nullptr;
+
+    Desert m_desert;
+    Palms m_palms;
 
     std::shared_ptr<Camera> m_Camera;
 };
