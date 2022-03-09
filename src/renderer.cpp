@@ -23,6 +23,7 @@ bool Renderer::Initialize()
 {
     m_desert.load("../../res/desert.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs");
     m_palms.load("../../res/palmTransfo.txt", "../../res/palm.obj", "../../res/shaders/palms.vs", "../../res/shaders/palms.fs");
+    m_partGen.init();
 
     glCreateBuffers(1, &m_UBO);
     glNamedBufferStorage(m_UBO, sizeof(glm::mat4), glm::value_ptr(m_Camera->GetViewProjectionMatrix()), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
@@ -32,12 +33,14 @@ bool Renderer::Initialize()
 
 void Renderer::Render()
 {
+    //m_partGen.update(0.01f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBO, 0, sizeof(glm::mat4));
 
     m_desert.render();
     m_palms.render();
+    m_partGen.render();
 
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, 0, 0, 0);
 }

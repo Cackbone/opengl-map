@@ -1,6 +1,9 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
-
+#include "shader/ShaderLinker.hpp"
+#include "shader/Shader.hpp"
+#include "utils.hpp"
+#include "ParticleGenerator.hpp"
 
 #include <desert.hpp>
 #include <palms.hpp>
@@ -41,6 +44,7 @@ private:
     Palms m_palms;
 
     std::shared_ptr<Camera> m_Camera;
+    ParticleGenerator m_partGen;
 };
 
 END_VISUALIZER_NAMESPACE
