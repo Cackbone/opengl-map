@@ -306,7 +306,7 @@ bool Window::InitWindow(const std::string_view& name, uint16_t width, uint16_t h
                     WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
                     WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
                     WGL_COLOR_BITS_ARB, 32,
-                    WGL_DEPTH_BITS_ARB, 0,
+                    WGL_DEPTH_BITS_ARB, 32,
                     WGL_STENCIL_BITS_ARB, 0,
                     0
                 };
