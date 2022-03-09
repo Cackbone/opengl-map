@@ -3,6 +3,8 @@
 
 #include "shader/ShaderLinker.hpp"
 #include "shader/Shader.hpp"
+#include "utils.hpp"
+#include "ParticleGenerator.hpp"
 
 BEGIN_VISUALIZER_NAMESPACE
 
@@ -37,6 +39,7 @@ private:
     glm::mat4* m_UBOData = nullptr;
 
     std::shared_ptr<Camera> m_Camera;
+    ParticleGenerator m_partGen;
 };
 
 END_VISUALIZER_NAMESPACE

@@ -14,11 +14,11 @@
 
 BEGIN_VISUALIZER_NAMESPACE
 
-struct VertexDataPosition3fColor3f
-{
-    glm::vec3 position;
-    glm::vec3 color;
-};
+//struct VertexDataPosition3fColor3f
+//{
+//    glm::vec3 position;
+//    glm::vec3 color;
+//};
 
 void loadMapMesh(std::vector<VertexDataPosition3fColor3f>& vertices, std::vector<long>& indices)
 {
@@ -110,11 +110,15 @@ bool Renderer::Initialize()
     glDetachShader(m_ShaderProgram, vShader.id());
     glDetachShader(m_ShaderProgram, fShader.id());
 
+    m_partGen.init();
+
     return true;
 }
 
 void Renderer::Render()
 {
+    //m_partGen.update(0.01f);
+    //m_partGen.render();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBO, 0, sizeof(glm::mat4));
