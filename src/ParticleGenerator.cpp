@@ -34,9 +34,12 @@ void ParticleGenerator::init() {
     glBindVertexArray(m_quadVAO);
 
     glCreateBuffers(1, &m_quadVBO);
-    glNamedBufferStorage(m_quadVBO, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data(), 0);
-    //glNamedBufferStorage(m_quadVBO, sizeof(VertexDataPosition3fColor3f) * m_poolSize, nullptr, GL_DYNAMIC_DRAW);
+    //glNamedBufferStorage(m_quadVBO, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data(), 0);
     glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VertexDataPosition3fColor3f) * 4, nullptr, GL_DYNAMIC_DRAW);
+    //glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
+
+
 
     glEnableVertexAttribArray(0);
     //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataPosition3fColor3f), nullptr);
@@ -55,11 +58,6 @@ void ParticleGenerator::init() {
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 
-
-    //glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-
     Shader vShader(GL_VERTEX_SHADER, "../../src/shader/ParticleShader.vs");
     Shader fShader(GL_FRAGMENT_SHADER, "../../src/shader/ParticleShader.fs");
 
@@ -75,17 +73,15 @@ void ParticleGenerator::init() {
 }
 
 void ParticleGenerator::render() {
-    //std::vector<VertexDataPosition3fColor3f> vertices({
-    //    { {-0.5f, -0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } },
-    //    { {0.5f, -0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } },
-    //    { {0.5f,  0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } },
-    //    { {-0.5f,  0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } }
-    //    });
-
-
-    //glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
-    //glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data());
-    //glBindBuffer(GL_ARRAY_BUFFER, 0);
+    std::vector<VertexDataPosition3fColor3f> vertices({
+        { {-0.5f, -0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } },
+        { {0.5f, -0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } },
+        { {0.5f,  0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } },
+        { {-0.5f,  0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } }
+        });
+    glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data());
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glUseProgram(m_ShaderProgram);
     glBindVertexArray(m_quadVAO);
