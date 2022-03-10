@@ -12,6 +12,9 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include <utils.hpp>
 #include <desert.hpp>
 
@@ -21,7 +24,7 @@ BEGIN_VISUALIZER_NAMESPACE
 
 bool Renderer::Initialize()
 {
-    m_desert.load("../../res/objs/desert.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs");
+    m_desert.load("../../res/objs/desert_texture.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs", "../../res/sand.png");
     m_palms.load("../../res/palmTransfo.txt", "../../res/objs/palm.obj", "../../res/shaders/palms.vs", "../../res/shaders/palms.fs");
 
     glCreateBuffers(1, &m_UBO);
@@ -32,6 +35,7 @@ bool Renderer::Initialize()
 
 void Renderer::Render()
 {
+    glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBO, 0, sizeof(glm::mat4));
