@@ -21,8 +21,8 @@ BEGIN_VISUALIZER_NAMESPACE
 
 bool Renderer::Initialize()
 {
-    m_desert.load("../../res/objs/desert.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs");
-    m_palms.load("../../res/palmTransfo.txt", "../../res/objs/palm.obj", "../../res/shaders/palms.vs", "../../res/shaders/palms.fs");
+    m_desert.load("../../res/desert.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs");
+    m_palms.load("../../res/palmTransfo.txt", "../../res/palm.obj", "../../res/shaders/palms.vs", "../../res/shaders/palms.fs");
 
     glCreateBuffers(1, &m_UBO);
     glNamedBufferStorage(m_UBO, sizeof(glm::mat4), glm::value_ptr(m_Camera->GetViewProjectionMatrix()), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);

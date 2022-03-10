@@ -132,11 +132,17 @@ void Desert::loadFromFile(const std::string& filename, std::vector<VertexDataPos
 
     tinyobj::LoadObj(&attribs, &shapes, &materials, &errors, filename.c_str());
 
+    if (errors.size() > 0) {
+        std::cerr << "Error while loading obj file: " << errors << std::endl;
+        return;
+    }
+
     const size_t nb_vertices = attribs.vertices.size() / 3;
     float min[3] = { -255.875f, -44.3907776f, -255.875f };
     float max[3] = { 255.875f, -12.0602303f, 255.875f };
 
     vertices.resize(nb_vertices);
+
     for (unsigned long i = 0; i < nb_vertices; i++) {
         float x = attribs.vertices[3 * i];
         float y = attribs.vertices[3 * i + 1];

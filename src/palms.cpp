@@ -53,6 +53,11 @@ void Palms::loadFromFile(const std::string& filename, std::vector<VertexDataPosi
 
     tinyobj::LoadObj(&attribs, &shapes, &materials, &errors, filename.c_str());
 
+    if (errors.size() > 0) {
+        std::cerr << "Error while loading obj file: " << errors << std::endl;
+        return;
+    }
+
     const size_t nb_vertices = attribs.vertices.size() / 3;
 
     vertices.resize(nb_vertices);
