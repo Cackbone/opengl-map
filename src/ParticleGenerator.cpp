@@ -50,8 +50,8 @@ void ParticleGenerator::init() {
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 
-    Shader vShader(GL_VERTEX_SHADER, "../../src/shader/ParticleShader.vs");
-    Shader fShader(GL_FRAGMENT_SHADER, "../../src/shader/ParticleShader.fs");
+    Shader vShader(GL_VERTEX_SHADER, "../../res/shaders/ParticleShader.vs");
+    Shader fShader(GL_FRAGMENT_SHADER, "../../res/shaders/ParticleShader.fs");
 
     ShaderLinker shaderLinker({
             vShader,
