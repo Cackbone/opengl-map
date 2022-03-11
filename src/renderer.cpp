@@ -24,9 +24,19 @@ BEGIN_VISUALIZER_NAMESPACE
 
 bool Renderer::Initialize()
 {
-    m_desert.load("../../res/objs/desert_texture.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs", "../../res/sand.png");
+    std::vector<std::string> skyboxTextures = {
+        "../../res/skybox/right.png",
+        "../../res/skybox/left.png",
+        "../../res/skybox/top.png",
+        "../../res/skybox/bottom.png",
+        "../../res/skybox/front.png",
+        "../../res/skybox/back.png"
+    };
+
+    m_desert.load("../../res/objs/desert_texture.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs", "../../res/sand.png", "../../res/sand_normal.png");
     m_palms.load("../../res/palmTransfo.txt", "../../res/objs/palm_color.obj", "../../res/shaders/palms.vs", "../../res/shaders/palms.fs");
     m_sun.load(5, "../../res/shaders/sun.vs", "../../res/shaders/sun.fs");
+    m_skybox.load(skyboxTextures, "../../res/shaders/skybox.vs", "../../res/shaders/skybox.fs");
 
     m_lightPos = { 0.0f, 100.0f, 0.0f };
     m_lightMovementRadius = 300.0f;
@@ -52,6 +62,7 @@ void Renderer::Render()
     m_desert.render();
     m_palms.render();
     m_sun.render();
+    m_skybox.render();
 
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, 0, 0, 0);
 }
@@ -65,7 +76,7 @@ void Renderer::Cleanup()
 void Renderer::UpdateViewport(uint32_t width, uint32_t height)
 {
     glViewport(0, 0, width, height);
-    UpdateCamera();
+    UpdateUniforms();
 }
 
 void Renderer::updateLightPos()
@@ -73,16 +84,11 @@ void Renderer::updateLightPos()
     m_lightAngle += 0.0050f;
     m_lightPos.x = m_lightMovementRadius * cos(m_lightAngle);
     m_lightPos.z = m_lightMovementRadius * sin(m_lightAngle);
-    m_lightPos.y = m_lightMovementRadius * sin(m_lightAngle);
-    RendererUniforms uniforms = {
-        m_Camera->GetViewProjectionMatrix(),
-        m_lightPos
-    };
-    std::memcpy(m_UBOData, &uniforms, sizeof(RendererUniforms));
-    glFlushMappedNamedBufferRange(m_UBO, 0, sizeof(RendererUniforms));
+    m_lightPos.y = std::max(m_lightMovementRadius * sin(m_lightAngle), m_lightMovementRadius * -0.25f);
+    UpdateUniforms();
 }
 
-void Renderer::UpdateCamera()
+void Renderer::UpdateUniforms()
 {
     RendererUniforms uniforms = {
         m_Camera->GetViewProjectionMatrix(),

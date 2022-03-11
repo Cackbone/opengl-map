@@ -599,7 +599,7 @@ void Window::SetCameraMovement(long horizontalMovement, long verticalMovement)
     m_Camera->HorizontalMovement(horizontalMovement);
     m_Camera->VerticalMovement(verticalMovement);
 
-    m_Renderer->UpdateCamera();
+    m_Renderer->UpdateUniforms();
 }
 
 void Window::MoveCameraForward(float dt)
@@ -652,7 +652,7 @@ void Window::HandleCameraMovement(float dt)
 
     if (anyMovement)
     {
-        m_Renderer->UpdateCamera();
+        m_Renderer->UpdateUniforms();
     }
 }
 

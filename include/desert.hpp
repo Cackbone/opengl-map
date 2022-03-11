@@ -12,7 +12,11 @@ public:
 	Desert();
 	~Desert();
 
-	void load(const std::string& objFilename, const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& textureFilename);
+	void load(const std::string& objFilename,
+		const std::string& vertexShaderFilename,
+		const std::string& fragmentShaderFilename,
+		const std::string& textureFilename,
+		const std::string& normalTextureFilename);
 	void render();
 
 	struct Vertex {
@@ -24,14 +28,14 @@ public:
 
 private:
 	int m_IndexCount;
-	unsigned int m_VAO, m_VBO, m_IBO, m_ShaderProgram, m_Texture;
+	unsigned int m_VAO, m_VBO, m_IBO, m_ShaderProgram, m_Texture, m_NormalTexture;
 
 	void loadFromFile(const std::string& filename, std::vector<Vertex>& vertices, std::vector<long>& indices);
-	void createVao(std::vector<Vertex>& vertices, std::vector<long>& indices, const std::string& textureFilename);
+	void createVao(std::vector<Vertex>& vertices, std::vector<long>& indices, const std::string& textureFilename, const std::string& normalTextureFilename);
 	void createVbo(std::vector<Vertex>& vertices);
 	void createIbo(std::vector<long>& indices);
 	void createShaders(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename);
-	void createTexture(const std::string& filename);
+	void createTexture(const std::string& filename, const std::string& normalTextureFilename);
 	void handleShaderErrors(unsigned int shader);
 };
 

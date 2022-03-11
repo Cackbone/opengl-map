@@ -5,6 +5,7 @@
 #include <desert.hpp>
 #include <palms.hpp>
 #include <sun.hpp>
+#include <skybox.hpp>
 
 BEGIN_VISUALIZER_NAMESPACE
 
@@ -30,7 +31,7 @@ public:
     void Cleanup();
 
     void UpdateViewport(uint32_t width, uint32_t height);
-    void UpdateCamera();
+    void UpdateUniforms();
     void updateLightPos();
 
     struct RendererUniforms {
@@ -47,6 +48,7 @@ private:
     Desert m_desert;
     Palms m_palms;
     Sun m_sun;
+    Skybox m_skybox;
 
     std::shared_ptr<Camera> m_Camera;
     glm::vec3 m_lightPos;
