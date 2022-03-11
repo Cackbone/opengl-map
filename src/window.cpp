@@ -568,6 +568,7 @@ void Window::Run()
         HandleCameraMovement(dt.count());
 
         m_Renderer->Render();
+        m_Renderer->updateLightPos();
 
         SwapBuffers(m_hDC);
     }

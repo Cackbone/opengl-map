@@ -15,13 +15,20 @@ public:
 	void load(const std::string& objFilename, const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& textureFilename);
 	void render();
 
+	struct Vertex {
+		glm::vec3 position;
+		glm::vec3 color;
+		glm::vec2 textCoord;
+		glm::vec3 normal;
+	};
+
 private:
 	int m_IndexCount;
 	unsigned int m_VAO, m_VBO, m_IBO, m_ShaderProgram, m_Texture;
 
-	void loadFromFile(const std::string& filename, std::vector<VertexDataPosition3fColor3f>& vertices, std::vector<long>& indices);
-	void createVao(std::vector<VertexDataPosition3fColor3f>& vertices, std::vector<long>& indices, const std::string& textureFilename);
-	void createVbo(std::vector<VertexDataPosition3fColor3f>& vertices);
+	void loadFromFile(const std::string& filename, std::vector<Vertex>& vertices, std::vector<long>& indices);
+	void createVao(std::vector<Vertex>& vertices, std::vector<long>& indices, const std::string& textureFilename);
+	void createVbo(std::vector<Vertex>& vertices);
 	void createIbo(std::vector<long>& indices);
 	void createShaders(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename);
 	void createTexture(const std::string& filename);
