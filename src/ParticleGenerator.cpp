@@ -2,9 +2,7 @@
 
 BEGIN_VISUALIZER_NAMESPACE
 
-ParticleGenerator::ParticleGenerator() : m_particlePool(m_poolSize) {
-    //std::srand(static_cast<unsigned int>(std::time(nullptr)));
-}
+ParticleGenerator::ParticleGenerator(glm::vec3 pos) : m_particlePool(m_poolSize), m_position(pos) { }
 
 ParticleGenerator::~ParticleGenerator() {
     glDeleteBuffers(1, &m_quadVBO);
@@ -89,13 +87,13 @@ std::array<VertexDataPosition3fColor3f, 4> ParticleGenerator::generateQuad(Parti
     glm::vec3 color = glm::mix(part.colorEnd, part.colorStart, part.live);
     std::array<VertexDataPosition3fColor3f, 4> quad;
     // left down vertice
-    quad[0] = { .position = glm::vec3(part.position.x, part.position.y, part.position.z), .color = color };
+    quad[0] = { .position = m_position + glm::vec3(part.position.x, part.position.y, part.position.z), .color = color };
     // right down vertice
-    quad[1] = { .position = glm::vec3(part.position.x + part.size, part.position.y, part.position.z), .color = color };
+    quad[1] = { .position = m_position + glm::vec3(part.position.x + part.size, part.position.y, part.position.z), .color = color };
     // right up vertice
-    quad[2] = { .position = glm::vec3(part.position.x + part.size, part.position.y + part.size, part.position.z), .color = color };
+    quad[2] = { .position = m_position + glm::vec3(part.position.x + part.size, part.position.y + part.size, part.position.z), .color = color };
     // left up vertice
-    quad[3] = { .position = glm::vec3(part.position.x, part.position.y + part.size, part.position.z), .color = color };
+    quad[3] = { .position = m_position + glm::vec3(part.position.x, part.position.y + part.size, part.position.z), .color = color };
     return quad;
 }
 
