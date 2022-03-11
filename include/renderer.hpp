@@ -1,5 +1,8 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
+
+#include <chrono>
+
 #include "shader/ShaderLinker.hpp"
 #include "shader/Shader.hpp"
 #include "utils.hpp"
@@ -45,6 +48,8 @@ private:
 
     std::shared_ptr<Camera> m_Camera;
     ParticleGenerator m_partGen;
+
+    std::chrono::system_clock::time_point m_lastRenderCall;
 };
 
 END_VISUALIZER_NAMESPACE

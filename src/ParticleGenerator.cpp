@@ -3,6 +3,7 @@
 BEGIN_VISUALIZER_NAMESPACE
 
 ParticleGenerator::ParticleGenerator() : m_particlePool(m_poolSize) {
+    //std::srand(static_cast<unsigned int>(std::time(nullptr)));
 }
 
 ParticleGenerator::~ParticleGenerator() {
@@ -12,34 +13,7 @@ ParticleGenerator::~ParticleGenerator() {
     glDeleteProgram(m_ShaderProgram);
 }
 
-void ParticleGenerator::update(float dt) {
-    for (auto& particle : m_particlePool) {
-        if (!particle.active)
-            continue;
-        if (particle.live <= 0) {
-            particle.active = false;
-            continue;
-        }
-        particle.live -= dt;
-        particle.position += particle.velocity * dt;
-    }
-}
-
 void ParticleGenerator::init() {
-    //std::vector<VertexDataPosition3fColor3f> vertices({
-    //    { {-0.5f, -0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } },
-    //    { {0.5f, -0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } },
-    //    { {0.5f,  0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } },
-    //    { {-0.5f,  0.5f, 0.0f}, { 1.0f, 1.0f, 1.0f } }
-    //});
-
-    emit(glm::vec3(0.5f, 0.0f, 0.0f));
-    emit(glm::vec3(-0.5f, -0.5f, 0.0f));
-
-    //std::vector<long> indices = {
-    //    0, 1, 2, 2, 3, 0,
-    //    4, 5, 6, 6, 7, 4,
-    //};
     std::vector<long> indices(m_poolSize * 6);
     long offset = 0l;
     for (int i = 0; i < indices.size(); i+= 6) {
@@ -58,18 +32,12 @@ void ParticleGenerator::init() {
     glBindVertexArray(m_quadVAO);
 
     glCreateBuffers(1, &m_quadVBO);
-    //glNamedBufferStorage(m_quadVBO, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data(), 0);
     glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(VertexDataPosition3fColor3f) * m_poolSize * 4, nullptr, GL_DYNAMIC_DRAW);
-    //glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
-
-
 
     glEnableVertexAttribArray(0);
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataPosition3fColor3f), nullptr);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataPosition3fColor3f), (const void *)offsetof(VertexDataPosition3fColor3f, position));
     glEnableVertexAttribArray(1);
-    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataPosition3fColor3f), reinterpret_cast<GLvoid*>(sizeof(glm::vec3)));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataPosition3fColor3f), (const void*)offsetof(VertexDataPosition3fColor3f, color));
     glCreateBuffers(1, &m_quadIBO);
     glNamedBufferStorage(m_quadIBO, sizeof(long) * indices.size(), indices.data(), 0);
@@ -96,31 +64,51 @@ void ParticleGenerator::init() {
     glDetachShader(m_ShaderProgram, fShader.id());
 }
 
-std::array<VertexDataPosition3fColor3f, 4> ParticleGenerator::generateQuad(glm::vec3 pos, glm::vec3 color) {
-    float size = 1.0f;
+void ParticleGenerator::update(float dt) {
+    m_lastEmission += dt;
+    auto b = m_lastEmission >= (1 / m_emitRate);
+    (void)b;
+    if (m_lastEmission >= (1 / m_emitRate)) {
+        emit(glm::vec3(0.0f, static_cast<float>(m_distCoord(m_seed)), 0.0f));
+        m_lastEmission = 0;
+    }
+    for (auto& particle : m_particlePool) {
+        if (!particle.active)
+            continue;
+        if (particle.live <= 0) {
+            m_activeParticle--;
+            particle.active = false;
+            continue;
+        }
+        particle.live -= dt;
+        particle.position += particle.velocity * dt;
+    }
+}
 
+std::array<VertexDataPosition3fColor3f, 4> ParticleGenerator::generateQuad(Particle &part) {
     std::array<VertexDataPosition3fColor3f, 4> quad;
     // left down vertice
-    quad[0] = { .position = glm::vec3(pos.x, pos.y, pos.z), .color = color };
+    quad[0] = { .position = glm::vec3(part.position.x, part.position.y, part.position.z), .color = part.color };
     // right down vertice
-    quad[1] = { .position = glm::vec3(pos.x + size, pos.y, pos.z), .color = color };
+    quad[1] = { .position = glm::vec3(part.position.x + part.size, part.position.y, part.position.z), .color = part.color };
     // right up vertice
-    quad[2] = { .position = glm::vec3(pos.x + size, pos.y + size, pos.z), .color = color };
+    quad[2] = { .position = glm::vec3(part.position.x + part.size, part.position.y + part.size, part.position.z), .color = part.color };
     // left up vertice
-    quad[3] = { .position = glm::vec3(pos.x, pos.y + size, pos.z), .color = color };
+    quad[3] = { .position = glm::vec3(part.position.x, part.position.y + part.size, part.position.z), .color = part.color };
     return quad;
 }
 
-void ParticleGenerator::render() {
-    update(0.01f);
+void ParticleGenerator::render(float dt) {
+    update(dt);
     std::vector<VertexDataPosition3fColor3f> vertices;
     for (auto& particle : m_particlePool) {
         if (!particle.active)
             continue;
-        auto quad = generateQuad(particle.position, particle.color);
+        auto quad = generateQuad(particle);
         vertices.insert(vertices.end(), { quad[0], quad[1], quad[2], quad[3] });
     }
     glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
+    glClearBufferData(GL_ARRAY_BUFFER, GL_R32F, GL_RED, GL_FLOAT, 0);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -132,15 +120,17 @@ void ParticleGenerator::render() {
 }
 
 void ParticleGenerator::emit(glm::vec3 pos) {
+    m_activeParticle++;
     Particle& particle = m_particlePool[m_poolIndex];
 
     particle.position = pos;
-    particle.color = glm::vec3(1.0f);
-    particle.live = 100;
+    particle.color = glm::vec3(0.427f, 0.392f, 0.274f);
+    particle.live = static_cast<float>(m_distLife(m_seed));
     particle.active = true;
-    //particle.velocity = glm::vec3(-0.01f, 0.0f, 0.0f);
+    particle.velocity = glm::vec3(10.0f, 0.0f, 0.0f);
+    particle.size = static_cast<float>(m_distSize(m_seed));
 
-    m_poolIndex = --m_poolIndex % m_particlePool.size();
+    m_poolIndex = m_poolIndex == 0 ? m_poolSize - 1 : m_poolIndex - 1;
 }
 
 END_VISUALIZER_NAMESPACE

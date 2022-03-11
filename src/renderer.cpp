@@ -40,9 +40,11 @@ void Renderer::Render()
 
     //m_desert.render();
     //m_palms.render();
-    m_partGen.render();
+    m_partGen.render(static_cast<float>(
+        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - m_lastRenderCall).count()) / 1000000.0f);
 
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, 0, 0, 0);
+    m_lastRenderCall = std::chrono::system_clock::now();
 }
 
 void Renderer::Cleanup()

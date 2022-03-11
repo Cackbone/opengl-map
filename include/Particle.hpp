@@ -8,6 +8,7 @@ struct Particle {
         glm::vec3 position;
         glm::vec3 velocity;
         glm::vec3 color = glm::vec3(0.5f);
-        float live;
+        float size = 1.0f;
+        float live; // in seconds
         bool active = false;
 };
