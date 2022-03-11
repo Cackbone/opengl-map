@@ -21,8 +21,8 @@ BEGIN_VISUALIZER_NAMESPACE
 
 bool Renderer::Initialize()
 {
-    m_desert.load("../../res/desert.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs");
-    m_palms.load("../../res/palmTransfo.txt", "../../res/palm.obj", "../../res/shaders/palms.vs", "../../res/shaders/palms.fs");
+    //m_desert.load("../../res/desert.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs");
+    //m_palms.load("../../res/palmTransfo.txt", "../../res/palm.obj", "../../res/shaders/palms.vs", "../../res/shaders/palms.fs");
     m_partGen.init();
 
     glCreateBuffers(1, &m_UBO);
@@ -38,8 +38,8 @@ void Renderer::Render()
 
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBO, 0, sizeof(glm::mat4));
 
-    m_desert.render();
-    m_palms.render();
+    //m_desert.render();
+    //m_palms.render();
     m_partGen.render();
 
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, 0, 0, 0);

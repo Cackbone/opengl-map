@@ -13,5 +13,5 @@ layout(std140, binding = 0) uniform Matrix
 void main()
 {
     color = inColor;
-    gl_Position = modelViewProjection*vec4(inWorldPos, 1.);
+    gl_Position = modelViewProjection * vec4(inWorldPos, 1.);
 }
