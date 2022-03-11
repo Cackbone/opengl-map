@@ -86,15 +86,16 @@ void ParticleGenerator::update(float dt) {
 }
 
 std::array<VertexDataPosition3fColor3f, 4> ParticleGenerator::generateQuad(Particle &part) {
+    glm::vec3 color = glm::mix(part.colorEnd, part.colorStart, part.live);
     std::array<VertexDataPosition3fColor3f, 4> quad;
     // left down vertice
-    quad[0] = { .position = glm::vec3(part.position.x, part.position.y, part.position.z), .color = part.color };
+    quad[0] = { .position = glm::vec3(part.position.x, part.position.y, part.position.z), .color = color };
     // right down vertice
-    quad[1] = { .position = glm::vec3(part.position.x + part.size, part.position.y, part.position.z), .color = part.color };
+    quad[1] = { .position = glm::vec3(part.position.x + part.size, part.position.y, part.position.z), .color = color };
     // right up vertice
-    quad[2] = { .position = glm::vec3(part.position.x + part.size, part.position.y + part.size, part.position.z), .color = part.color };
+    quad[2] = { .position = glm::vec3(part.position.x + part.size, part.position.y + part.size, part.position.z), .color = color };
     // left up vertice
-    quad[3] = { .position = glm::vec3(part.position.x, part.position.y + part.size, part.position.z), .color = part.color };
+    quad[3] = { .position = glm::vec3(part.position.x, part.position.y + part.size, part.position.z), .color = color };
     return quad;
 }
 
@@ -124,7 +125,8 @@ void ParticleGenerator::emit(glm::vec3 pos) {
     Particle& particle = m_particlePool[m_poolIndex];
 
     particle.position = pos;
-    particle.color = glm::vec3(0.427f, 0.392f, 0.274f);
+    particle.colorStart = glm::vec3(0.882f, 0.749f, 0.572f);
+    particle.colorEnd = glm::vec3(0.0f);
     particle.live = static_cast<float>(m_distLife(m_seed));
     particle.active = true;
     particle.velocity = glm::vec3(10.0f, 0.0f, 0.0f);

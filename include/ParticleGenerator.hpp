@@ -50,7 +50,7 @@ class ParticleGenerator {
         std::mt19937 m_coordGen = std::mt19937(m_seed()); // generator for particle coordinate
         std::uniform_real_distribution<> m_distCoord = std::uniform_real_distribution<>(-1.0, 1.0);
         std::uniform_real_distribution<> m_distLife = std::uniform_real_distribution<>(1, 2);
-        std::uniform_real_distribution<> m_distSize = std::uniform_real_distribution<>(0.05, 0.1);
+        std::uniform_real_distribution<> m_distSize = std::uniform_real_distribution<>(0.02, 0.08);
 };
 
 END_VISUALIZER_NAMESPACE
