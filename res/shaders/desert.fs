@@ -3,8 +3,12 @@
 layout(location = 0) out vec4 outColor;
 
 layout(location = 0) smooth in vec3 color;
+layout(location = 1) smooth in vec2 inTexCoords;
+
+uniform sampler2D ourTexture;
 
 void main()
 {
-    outColor = vec4(color, 1.0);
+    vec4 texColor = texture(ourTexture, inTexCoords);
+    outColor = texColor;
 }

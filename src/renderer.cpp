@@ -12,6 +12,9 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include <utils.hpp>
 #include <desert.hpp>
 
@@ -21,8 +24,8 @@ BEGIN_VISUALIZER_NAMESPACE
 
 bool Renderer::Initialize()
 {
-    //m_desert.load("../../res/desert.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs");
-    //m_palms.load("../../res/palmTransfo.txt", "../../res/palm.obj", "../../res/shaders/palms.vs", "../../res/shaders/palms.fs");
+    m_desert.load("../../res/objs/desert_texture.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs", "../../res/sand.png");
+    m_palms.load("../../res/palmTransfo.txt", "../../res/objs/palm.obj", "../../res/shaders/palms.vs", "../../res/shaders/palms.fs");
     m_partGen.init();
 
     glCreateBuffers(1, &m_UBO);
@@ -33,13 +36,13 @@ bool Renderer::Initialize()
 
 void Renderer::Render()
 {
-    //m_partGen.update(0.01f);
+    glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBO, 0, sizeof(glm::mat4));
 
-    //m_desert.render();
-    //m_palms.render();
+    m_desert.render();
+    m_palms.render();
     m_partGen.render(static_cast<float>(
         std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - m_lastRenderCall).count()) / 1000000.0f);
 
