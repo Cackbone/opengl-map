@@ -39,11 +39,13 @@ bool Renderer::Initialize()
     m_skybox.load(skyboxTextures, "../../res/shaders/skybox.vs", "../../res/shaders/skybox.fs");
 
     auto positions = m_desert.getParticlePos();
-    //for (const glm::vec3 &pos : positions) {
-    //    m_partGens.emplace_back(pos);
-    //}
     m_partGen.init();
     m_partGen.setPosition(positions[0] - glm::vec3(0.0f, 1.0f, 0.0f));
+
+    //for (const glm::vec3 &pos : positions) {
+    //    m_partGens.emplace_back(pos);
+    //    m_partGens.back().init();
+    //}
 
     m_lightPos = { 0.0f, 100.0f, 0.0f };
     m_lightMovementRadius = 300.0f;
@@ -71,7 +73,12 @@ void Renderer::Render()
     m_sun.render();
     m_skybox.render();
     m_partGen.render(static_cast<float>(
-        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - m_lastRenderCall).count()) / 1000000.0f);
+                std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - m_lastRenderCall).count()) / 1000000.0f);
+
+    //for (ParticleGenerator& gen : m_partGens) {
+    //    gen.render(static_cast<float>(
+    //            std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - m_lastRenderCall).count()) / 1000000.0f);
+    //}
 
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, 0, 0, 0);
     m_lastRenderCall = std::chrono::system_clock::now();

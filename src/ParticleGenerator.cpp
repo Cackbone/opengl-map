@@ -2,7 +2,7 @@
 
 BEGIN_VISUALIZER_NAMESPACE
 
-ParticleGenerator::ParticleGenerator(const glm::vec3 pos) : m_particlePool(m_poolSize), m_position(pos) { }
+ParticleGenerator::ParticleGenerator(const glm::vec3 pos) : m_particlePool(m_poolSize), m_position(pos) {}
 
 ParticleGenerator::~ParticleGenerator() {
     glDeleteBuffers(1, &m_quadVBO);
@@ -48,24 +48,27 @@ void ParticleGenerator::init() {
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 
-    Shader vShader(GL_VERTEX_SHADER, "../../res/shaders/ParticleShader.vs");
-    Shader fShader(GL_FRAGMENT_SHADER, "../../res/shaders/ParticleShader.fs");
+    static GLuint shaderId = 0;
 
-    ShaderLinker shaderLinker({
-            vShader,
-            fShader
-        });
+    if (shaderId == 0) {
+        Shader vShader(GL_VERTEX_SHADER, "../../res/shaders/ParticleShader.vs");
+        Shader fShader(GL_FRAGMENT_SHADER, "../../res/shaders/ParticleShader.fs");
 
-    m_ShaderProgram = shaderLinker.id();
+        ShaderLinker shaderLinker({
+                vShader,
+                fShader
+            });
 
-    glDetachShader(m_ShaderProgram, vShader.id());
-    glDetachShader(m_ShaderProgram, fShader.id());
+        shaderId = shaderLinker.id();
+        glDetachShader(shaderId, vShader.id());
+        glDetachShader(shaderId, fShader.id());
+    }
+    m_ShaderProgram = shaderId;
+
 }
 
 void ParticleGenerator::update(float dt) {
     m_lastEmission += dt;
-    auto b = m_lastEmission >= (1 / m_emitRate);
-    (void)b;
     if (m_lastEmission >= (1 / m_emitRate)) {
         emit(glm::vec3(0.0f, static_cast<float>(m_distCoord(m_seed)), 0.0f));
         m_lastEmission = 0;

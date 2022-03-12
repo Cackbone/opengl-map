@@ -16,9 +16,14 @@ class ParticleGenerator {
     public:
         ParticleGenerator(const glm::vec3 pos = glm::vec3(0.0f));
         ~ParticleGenerator();
+        ParticleGenerator(const ParticleGenerator& other) : m_particlePool(m_poolSize), m_position(other.getPosition()) {  }
+        ParticleGenerator(ParticleGenerator&& other) : m_particlePool(m_poolSize), m_position(other.getPosition()) { }
 
         inline void setPosition(const glm::vec3& newPos) {
             m_position = newPos;
+        }
+        inline glm::vec3 getPosition() const {
+            return m_position;
         }
 
         void init();

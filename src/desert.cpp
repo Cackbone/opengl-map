@@ -159,7 +159,7 @@ void Desert::loadFromFile(const std::string& filename, std::vector<Vertex>& vert
         float z = attribs.vertices[3 * i + 2];
         float color = (y - min[1]) / (max[1] - min[1]) - 0.6f;
 
-        if (y > -13) {
+        if (y > -12.1) {
             m_particlePositions.emplace_back(x, y, z);
         }
 

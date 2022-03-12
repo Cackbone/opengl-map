@@ -60,7 +60,7 @@ private:
     glm::vec3 m_lightPos;
     float m_lightAngle;
     float m_lightMovementRadius;
-    //std::vector<ParticleGenerator> m_partGens;
+    std::vector<ParticleGenerator> m_partGens;
     ParticleGenerator m_partGen;
 
     std::chrono::system_clock::time_point m_lastRenderCall;
