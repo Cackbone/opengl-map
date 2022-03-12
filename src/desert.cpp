@@ -17,13 +17,13 @@ Desert::Desert() :
 
 }
 
-void Desert::load(const std::string& objFilename, const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& textureFilename)
+void Desert::load(const std::string& objFilename, const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& textureFilename, const std::string& normalTextureFilename)
 {
-    std::vector<VertexDataPosition3fColor3f> vertices;
+    std::vector<Vertex> vertices;
     std::vector<long> indices;
     loadFromFile(objFilename, vertices, indices);
 
-    createVao(vertices, indices, textureFilename);
+    createVao(vertices, indices, textureFilename, normalTextureFilename);
     createShaders(vertexShaderFilename, fragmentShaderFilename);
 
     glBindVertexArray(0);
@@ -41,29 +41,33 @@ Desert::~Desert()
     glDeleteBuffers(1, &m_IBO);
     glDeleteVertexArrays(1, &m_VAO);
     glDeleteProgram(m_ShaderProgram);
+    glDeleteTextures(1, &m_Texture);
+    glDeleteTextures(1, &m_NormalTexture);
 }
 
-void Desert::createVao(std::vector<VertexDataPosition3fColor3f>& vertices, std::vector<long>& indices, const std::string &textureFilename)
+void Desert::createVao(std::vector<Vertex>& vertices, std::vector<long>& indices, const std::string &textureFilename, const std::string& normalTextureFilename)
 {
     glCreateVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
     createVbo(vertices);
     createIbo(indices);
-    createTexture(textureFilename);
+    createTexture(textureFilename, normalTextureFilename);
 
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataPosition3fColor3f), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataPosition3fColor3f), reinterpret_cast<GLvoid*>(sizeof(glm::vec3)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(sizeof(glm::vec3)));
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexDataPosition3fColor3f), reinterpret_cast<GLvoid*>(sizeof(glm::vec3) * 2));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(sizeof(glm::vec3) * 2));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(sizeof(glm::vec3) * 2 + sizeof(glm::vec2)));
 }
 
-void Desert::createVbo(std::vector<VertexDataPosition3fColor3f>& vertices)
+void Desert::createVbo(std::vector<Vertex>& vertices)
 {
     glCreateBuffers(1, &m_VBO);
-    glNamedBufferStorage(m_VBO, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data(), 0);
+    glNamedBufferStorage(m_VBO, sizeof(Vertex) * vertices.size(), vertices.data(), 0);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 }
 
@@ -129,7 +133,7 @@ void Desert::handleShaderErrors(unsigned int shader)
     }
 }
 
-void Desert::loadFromFile(const std::string& filename, std::vector<VertexDataPosition3fColor3f>& vertices, std::vector<long>& indices)
+void Desert::loadFromFile(const std::string& filename, std::vector<Vertex>& vertices, std::vector<long>& indices)
 {
     tinyobj::attrib_t attribs;
     std::vector<tinyobj::shape_t> shapes;
@@ -155,29 +159,42 @@ void Desert::loadFromFile(const std::string& filename, std::vector<VertexDataPos
         float z = attribs.vertices[3 * i + 2];
         float color = (y - min[1]) / (max[1] - min[1]) - 0.6f;
 
+        if (y > -13) {
+            m_particlePositions.emplace_back(x, y, z);
+        }
+
         vertices[i] = {
             glm::vec3(x, y, z),
             glm::vec3({ 0.9294f + color, 0.7882f + color , 0.686f + color}),
-            glm::vec2(0)
+            glm::vec2(0),
+            glm::vec3(0)
         };
     }
 
     const size_t texCoordsCount = attribs.texcoords.size();
+    const size_t normalCount = attribs.normals.size();
     indices.resize(shapes[0].mesh.indices.size());
     for (unsigned long i = 0; i < shapes[0].mesh.indices.size(); i++) {
         const unsigned int vertex_index = shapes[0].mesh.indices[i].vertex_index;
-        const unsigned int texcoord_index = shapes[0].mesh.indices[i].texcoord_index;
         indices[i] = static_cast<long>(vertex_index);
+
         if (texCoordsCount > 0) {
+            const unsigned int texcoord_index = shapes[0].mesh.indices[i].texcoord_index;
             vertices[vertex_index].textCoord.x = attribs.texcoords[2 * texcoord_index];
             vertices[vertex_index].textCoord.y = attribs.texcoords[2 * texcoord_index + 1];
+        }
+        if (normalCount > 0) {
+            const unsigned int normal_index = shapes[0].mesh.indices[i].normal_index;
+            vertices[vertex_index].normal.x = attribs.normals[3 * normal_index];
+            vertices[vertex_index].normal.y = attribs.normals[3 * normal_index + 1];
+            vertices[vertex_index].normal.z = attribs.normals[3 * normal_index + 2];
         }
     }
 
     m_IndexCount = static_cast<int>(indices.size());
 }
 
-void Desert::createTexture(const std::string& filename)
+void Desert::createTexture(const std::string& filename, const std::string& normalTextureFilename)
 {
     int width, height, channels;
 
@@ -199,10 +216,32 @@ void Desert::createTexture(const std::string& filename)
         std::cerr << "Failed to load texture file" << std::endl;
     }
     stbi_image_free(data);
+
+    glGenTextures(1, &m_NormalTexture);
+    glBindTexture(GL_TEXTURE_2D, m_NormalTexture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    data = stbi_load(normalTextureFilename.c_str(), &width, &height, &channels, 0);
+
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+        std::cerr << "Failed to load texture file" << std::endl;
+    }
+    stbi_image_free(data);
 }
 
 void Desert::render() {
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_Texture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_NormalTexture);
     glUseProgram(m_ShaderProgram);
     glBindVertexArray(m_VAO);
     glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, nullptr);

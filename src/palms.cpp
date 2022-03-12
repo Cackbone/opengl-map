@@ -44,7 +44,7 @@ void Palms::loadPositions(std::string filename, std::vector<glm::vec3>& position
     }
 }
 
-void Palms::loadFromFile(const std::string& filename, std::vector<VertexDataPosition3fColor3f>& vertices, std::vector<long>& indices)
+void Palms::loadFromFile(const std::string& filename, std::vector<Vertex>& vertices, std::vector<long>& indices)
 {
     tinyobj::attrib_t attribs;
     std::vector<tinyobj::shape_t> shapes;
@@ -68,22 +68,50 @@ void Palms::loadFromFile(const std::string& filename, std::vector<VertexDataPosi
 
         vertices[i] = {
             glm::vec3(x, y, z),
-            glm::vec3(1.0f)
+            glm::vec3(0.0f, 0.0f, 1.0f),
+            glm::vec2(0),
+            glm::vec3(0)
         };
     }
 
-    indices.resize(shapes[0].mesh.indices.size());
-    for (unsigned long i = 0; i < shapes[0].mesh.indices.size(); i++) {
-        indices[i] = static_cast<long>(shapes[0].mesh.indices[i].vertex_index);
+    const size_t texCoordsCount = attribs.texcoords.size();
+    const size_t normalCount = attribs.normals.size();
+    indices.resize(shapes[0].mesh.indices.size() + shapes[1].mesh.indices.size());
+    unsigned long indices_index = 0;
+    for (unsigned int shape = 0; shape < 2; shape++) {
+        for (unsigned long i = indices_index; i < shapes[shape].mesh.indices.size(); i++) {
+            const unsigned int vertex_index = shapes[shape].mesh.indices[i].vertex_index;
+            indices[i] = static_cast<long>(vertex_index);
+
+            if (texCoordsCount > 0) {
+                const unsigned int texcoord_index = shapes[shape].mesh.indices[i].texcoord_index;
+                vertices[vertex_index].textCoord.x = attribs.texcoords[2 * texcoord_index];
+                vertices[vertex_index].textCoord.y = attribs.texcoords[2 * texcoord_index + 1];
+            }
+            if (normalCount > 0) {
+                const unsigned int normal_index = shapes[shape].mesh.indices[i].normal_index;
+                vertices[vertex_index].normal.x = attribs.normals[3 * normal_index];
+                vertices[vertex_index].normal.y = attribs.normals[3 * normal_index + 1];
+                vertices[vertex_index].normal.z = attribs.normals[3 * normal_index + 2];
+            }
+
+            if (shape == 0) { // Wood
+                vertices[vertex_index].color = glm::vec3(0.491, 0.262, 0.125);
+            }
+            else {
+                vertices[vertex_index].color = glm::vec3(0.034, 0.451, 0.034);
+            }
+        }
+        indices_index += unsigned long(shapes[shape].mesh.indices.size());
     }
 }
 
 void Palms::load(const std::string& positionsFile, const std::string& objFilename, const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename)
 {
     std::vector<glm::vec3> positions;
-    std::vector<VertexDataPosition3fColor3f> palmVertices;
+    std::vector<Vertex> palmVertices;
     std::vector<long> palmIndices;
-    std::vector<VertexDataPosition3fColor3f> vertices;
+    std::vector<Vertex> vertices;
     std::vector<long> indices;
 
     loadPositions(positionsFile, positions);
@@ -98,7 +126,12 @@ void Palms::load(const std::string& positionsFile, const std::string& objFilenam
         auto& position = positions[positionIndex];
 
         for (unsigned long i = 0; i < palmVerticeCount; i++) {
-            vertices[positionIndex * palmVerticeCount + i] = {palmVertices[i].position + position, palmVertices[i].color};
+            vertices[positionIndex * palmVerticeCount + i] = {
+                palmVertices[i].position + position, // position
+                palmVertices[i].color,               // color
+                palmVertices[i].textCoord,           // texCoords
+                palmVertices[i].normal               // normal
+            };
         }
 
         for (unsigned long i = 0; i < palmIndiceCount; i++) {
@@ -119,7 +152,7 @@ void Palms::load(const std::string& positionsFile, const std::string& objFilenam
     glDisableVertexAttribArray(1);
 }
 
-void Palms::createVao(std::vector<VertexDataPosition3fColor3f>& vertices, std::vector<long>& indices)
+void Palms::createVao(std::vector<Vertex>& vertices, std::vector<long>& indices)
 {
     glCreateVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
@@ -127,15 +160,19 @@ void Palms::createVao(std::vector<VertexDataPosition3fColor3f>& vertices, std::v
     createIbo(indices);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataPosition3fColor3f), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataPosition3fColor3f), reinterpret_cast<GLvoid*>(sizeof(glm::vec3)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(sizeof(glm::vec3)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(sizeof(glm::vec3) * 2));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(sizeof(glm::vec3) * 2 + sizeof(glm::vec2)));
 }
 
-void Palms::createVbo(std::vector<VertexDataPosition3fColor3f>& vertices)
+void Palms::createVbo(std::vector<Vertex>& vertices)
 {
     glCreateBuffers(1, &m_VBO);
-    glNamedBufferStorage(m_VBO, sizeof(VertexDataPosition3fColor3f) * vertices.size(), vertices.data(), 0);
+    glNamedBufferStorage(m_VBO, sizeof(Vertex) * vertices.size(), vertices.data(), 0);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 }
 

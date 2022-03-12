@@ -19,7 +19,7 @@ public:
 		   glm::vec3 position = glm::vec3(0.0f),
 		   float horizontalAngle = glm::half_pi<float>(),
 		   float verticalAngle = glm::pi<float>(),
-		   float speed = 20.0f,
+		   float speed = 40.0f,
 		   float mouseSpeed = 0.005f,
 		   float FOV = 70.0f,
 		   float near = 0.1f,

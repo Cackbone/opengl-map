@@ -2,7 +2,7 @@
 
 BEGIN_VISUALIZER_NAMESPACE
 
-ParticleGenerator::ParticleGenerator(glm::vec3 pos) : m_particlePool(m_poolSize), m_position(pos) { }
+ParticleGenerator::ParticleGenerator(const glm::vec3 pos) : m_particlePool(m_poolSize), m_position(pos) { }
 
 ParticleGenerator::~ParticleGenerator() {
     glDeleteBuffers(1, &m_quadVBO);
@@ -127,7 +127,7 @@ void ParticleGenerator::emit(glm::vec3 pos) {
     particle.colorEnd = glm::vec3(0.0f);
     particle.live = static_cast<float>(m_distLife(m_seed));
     particle.active = true;
-    particle.velocity = glm::vec3(10.0f, 0.0f, 0.0f);
+    particle.velocity = glm::vec3(10.0f, 0.4f, 0.0f);
     particle.size = static_cast<float>(m_distSize(m_seed));
 
     m_poolIndex = m_poolIndex == 0 ? m_poolSize - 1 : m_poolIndex - 1;

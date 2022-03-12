@@ -14,8 +14,12 @@ BEGIN_VISUALIZER_NAMESPACE
 
 class ParticleGenerator {
     public:
-        ParticleGenerator(glm::vec3 pos = glm::vec3(0.0f));
+        ParticleGenerator(const glm::vec3 pos = glm::vec3(0.0f));
         ~ParticleGenerator();
+
+        inline void setPosition(const glm::vec3& newPos) {
+            m_position = newPos;
+        }
 
         void init();
         void update(float dt); // dt in seconds
@@ -47,9 +51,10 @@ class ParticleGenerator {
 
         // random
         std::random_device m_seed;
-        std::mt19937 m_coordGen = std::mt19937(m_seed()); // generator for particle coordinate
+        std::mt19937 m_coordGen = std::mt19937(m_seed()); // generator for random values
         std::uniform_real_distribution<> m_distCoord = std::uniform_real_distribution<>(-0.5, 0.5);
         std::uniform_real_distribution<> m_distLife = std::uniform_real_distribution<>(1, 1.5);
+        //std::uniform_real_distribution<> m_distSize = std::uniform_real_distribution<>(20, 25);
         std::uniform_real_distribution<> m_distSize = std::uniform_real_distribution<>(0.02, 0.08);
 };
 
