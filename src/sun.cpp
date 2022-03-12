@@ -12,6 +12,115 @@
 
 BEGIN_VISUALIZER_NAMESPACE
 
+
+
+void GenerateSphereMesh(std::vector<glm::vec3>& vertices, std::vector<int>& indices, int sphereStackCount, int sphereSectorCount, glm::vec3 sphereCenter, float sphereRadius)
+{
+    std::size_t vertexId = 0;
+
+    for (uint16_t i = 0; i <= sphereStackCount; ++i)
+    {
+        const float t = static_cast<float>(i) / static_cast<float>(sphereStackCount);
+
+        const float stackAngle = glm::pi<float>() / 2.0f - t * glm::pi<float>();
+
+        const float nxz = glm::cos(stackAngle);
+        const float ny = glm::sin(stackAngle);
+
+        const float xz = sphereRadius * nxz;
+        const float y = sphereRadius * ny;
+
+        const float mul = stackAngle < 0.0f ? -1.0f : 1.0f;
+
+        const float dxz = -ny * mul;
+
+        // When stackAngle is null dxz is equal to 0 and it is impossible to compute the tangents and bitangents
+        // So we use the up vector as a bitangent
+        const bool useUpVector = (sphereStackCount % 2 == 0) && (i == sphereStackCount / 2);
+
+        for (uint16_t j = 0; j <= sphereSectorCount; ++j)
+        {
+            const float s = static_cast<float>(j) / static_cast<float>(sphereSectorCount);
+
+            const float sectorAngle = s * 2.0f * glm::pi<float>();
+
+            const float csa = glm::cos(sectorAngle);
+            const float ssa = glm::sin(sectorAngle);
+
+            const float nx = nxz * csa;
+            const float nz = nxz * ssa;
+
+            const float x = xz * csa;
+            const float z = xz * ssa;
+
+            const glm::vec3 direction = glm::vec3(x, y, z);
+
+            const glm::vec3 position = sphereCenter + direction;
+
+            const glm::vec2 texcoords = glm::vec2(s, t);
+
+            const glm::vec3 normal = glm::vec3(nx, ny, nz);
+
+            vertices[vertexId++] = position;
+
+            if (useUpVector)
+            {
+                const glm::vec3 bitangent = glm::vec3(0.0f, 0.0f, 1.0f);
+                const glm::vec3 tangent = glm::cross(normal, bitangent);
+            }
+            else
+            {
+                const glm::vec3 tangent = glm::normalize(glm::vec3(dxz * -glm::sin(sectorAngle), dxz * glm::cos(sectorAngle), 0.0f));
+                const glm::vec3 bitangent = glm::cross(tangent, normal);
+            }
+        }
+    }
+
+    const int sectorCountplusOne = sphereSectorCount + 1;
+
+    std::size_t indexID = 0;
+
+    for (int j = 0; j < sphereSectorCount; ++j)
+    {
+        const int jp1 = j + 1;
+
+        indices[indexID++] = j;
+        indices[indexID++] = sectorCountplusOne + j;
+        indices[indexID++] = sectorCountplusOne + jp1;
+    }
+
+    for (int i = 1; i < sphereStackCount - 1; ++i)
+    {
+        const int k1 = i * sectorCountplusOne;
+        const int k2 = k1 + sectorCountplusOne;
+
+        for (int j = 0; j < sphereSectorCount; ++j)
+        {
+            const int jp1 = j + 1;
+
+            indices[indexID++] = k1 + j;
+            indices[indexID++] = k2 + j;
+            indices[indexID++] = k1 + jp1;
+
+            indices[indexID++] = k1 + jp1;
+            indices[indexID++] = k2 + j;
+            indices[indexID++] = k2 + jp1;
+        }
+    }
+
+    const int k1 = (sphereStackCount - 1) * sectorCountplusOne;
+    const int k2 = k1 + sectorCountplusOne;
+
+    for (int j = 0; j < sphereSectorCount; ++j)
+    {
+        const int jp1 = j + 1;
+
+        indices[indexID++] = k1 + j;
+        indices[indexID++] = k2 + j;
+        indices[indexID++] = k1 + jp1;
+    }
+}
+
 Sun::Sun() :
 	m_VAO(0), m_VBO(0), m_IBO(0), m_ShaderProgram(0)
 {
@@ -27,37 +136,22 @@ Sun::~Sun()
 
 void Sun::load(const unsigned int size, const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename)
 {
-    glm::vec3 cubeVertices[8] = {
-        {0.0f, 0.0f, 0.0f},
-        {1.0f, 0.0f, 0.0f},
-        {1.0f, 1.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
+    const int sphereStackCount = 63;
+    const int sphereSectorCount = 63;
 
-        {0.0f, 0.0f, 1.0f},
-        {1.0f, 0.0f, 1.0f},
-        {1.0f, 1.0f, 1.0f},
-        {0.0f, 1.0f, 1.0f},
-    };
+    const int vertexCount = (sphereStackCount + 1) * (sphereSectorCount + 1);
+    const int indexCount = (sphereStackCount - 1) * sphereSectorCount * 6;
 
-    for (int i = 0; i < 8; i++) {
-        cubeVertices[i] *= float(size);
-    }
+    m_IndexCount = indexCount;
 
-    int cubeIndices[] = {
-        0, 1, 3, 3, 1, 2,
-        1, 5, 2, 2, 5, 6,
-        5, 4, 6, 6, 4, 7,
-        4, 0, 7, 7, 0, 3,
-        3, 2, 7, 7, 2, 6,
-        4, 5, 0, 0, 5, 1
-    };
+    std::vector<glm::vec3> vertices(vertexCount);
+    std::vector<int> indices(indexCount);
 
-    std::vector<glm::vec3> vertices;
-    vertices.assign(std::begin(cubeVertices), std::end(cubeVertices));
-    std::vector<int> indices;
-    indices.assign(std::begin(cubeIndices), std::end(cubeIndices));
+    m_IndexCount = indexCount;
 
-    m_IndexCount = int(indices.size());
+    glm::vec3 sphereCenter(1.0f, 0.0f, 0.0f);
+
+    GenerateSphereMesh(vertices, indices, sphereStackCount, sphereSectorCount, sphereCenter, float(size));
 
     createVao(vertices, indices);
     createShaders(vertexShaderFilename, fragmentShaderFilename);

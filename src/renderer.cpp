@@ -35,7 +35,7 @@ bool Renderer::Initialize()
 
     m_desert.load("../../res/objs/desert_texture.obj", "../../res/shaders/desert.vs", "../../res/shaders/desert.fs", "../../res/sand.png", "../../res/sand_normal.png");
     m_palms.load("../../res/palmTransfo.txt", "../../res/objs/palm_color.obj", "../../res/shaders/palms.vs", "../../res/shaders/palms.fs");
-    m_sun.load(5, "../../res/shaders/sun.vs", "../../res/shaders/sun.fs");
+    m_sun.load(20, "../../res/shaders/sun.vs", "../../res/shaders/sun.fs");
     m_skybox.load(skyboxTextures, "../../res/shaders/skybox.vs", "../../res/shaders/skybox.fs");
 
     m_lightPos = { 0.0f, 100.0f, 0.0f };
@@ -81,7 +81,7 @@ void Renderer::UpdateViewport(uint32_t width, uint32_t height)
 
 void Renderer::updateLightPos()
 {
-    m_lightAngle += 0.0050f;
+    m_lightAngle += 0.008f;
     m_lightPos.x = m_lightMovementRadius * cos(m_lightAngle);
     m_lightPos.z = m_lightMovementRadius * sin(m_lightAngle);
     m_lightPos.y = std::max(m_lightMovementRadius * sin(m_lightAngle), m_lightMovementRadius * -0.25f);
